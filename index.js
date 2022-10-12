@@ -91,7 +91,6 @@ const SecondStreetApiExamples = {
   },
 
   start: async function (){
-    console.log(process.env.authData);
     SecondStreetApiExamples.token = await SecondStreetApiExamples.postAuth();
     // SecondStreetApiExamples.organizations = await SecondStreetApiExamples.getOrganizations();
     SecondStreetApiExamples.contests = await SecondStreetApiExamples.getOrganizationPromotions();
