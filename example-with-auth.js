@@ -170,4 +170,6 @@ const SecondStreetApiExamples = {
 
 }
 
-SecondStreetApiExamples.start();
+await SecondStreetApiExamples.start();
+
+SecondStreetApiExamples.getWinnersReport();
