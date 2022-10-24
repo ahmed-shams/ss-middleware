@@ -21,7 +21,7 @@ export class MerchantsService {
     return this.merchantRepository.find();
   }
 
-  findOne(id: string) {
+  findOne(id: number) {
     return this.merchantRepository.findOne({
       where: {
         id
@@ -29,7 +29,7 @@ export class MerchantsService {
     });
   }
 
-  update(id: string, updateMerchantDto: UpdateMerchantDto) {
+  update(id: number, updateMerchantDto: UpdateMerchantDto) {
     const category: Merchant = {
       id: updateMerchantDto.id,
       name: updateMerchantDto.name,
@@ -38,7 +38,7 @@ export class MerchantsService {
     return this.merchantRepository.update(id, category);
   }
 
-  remove(id: string) {
+  remove(id: number) {
     return this.merchantRepository.delete({id});
   }
 }

@@ -19,7 +19,7 @@ export class CategoriesService {
     return this.categoryRepository.find();
   }
 
-  async findOne(id: string): Promise<Category> {
+  async findOne(id: number): Promise<Category> {
     return this.categoryRepository.findOne({
       where: {
         id
@@ -27,7 +27,7 @@ export class CategoriesService {
     });
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     const category: Category = {
       id: updateCategoryDto.id,
       name: updateCategoryDto.name,
@@ -36,7 +36,7 @@ export class CategoriesService {
     return this.categoryRepository.update(id, category);
   }
 
-  remove(id: string) {
+  remove(id: number) {
     return this.categoryRepository.delete({id});
   }
 }

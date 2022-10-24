@@ -2,8 +2,9 @@ import { Entity, Column, PrimaryGeneratedColumn, PessimisticLockTransactionRequi
 
 @Entity()
 export class Merchant {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('increment')
+  @Column({type:'integer', primary:true})
+  id: number;
 
   @Column({nullable:false, length:45})
   name: string;

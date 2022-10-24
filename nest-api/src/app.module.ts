@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { InitializationService } from './init';
 import { CategoriesModule } from './categories/categories.module';
 import { MerchantsModule } from './merchants/merchants.module';
+import { NominationsModule } from './nominations/nominations.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MerchantsModule } from './merchants/merchants.module';
     }),
     CategoriesModule,
     MerchantsModule,
+    NominationsModule,
   ],
   controllers: [AppController],
   providers: [AppService, InitializationService],
