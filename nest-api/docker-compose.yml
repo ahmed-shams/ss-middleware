@@ -5,16 +5,18 @@ services:
     image: mysql:5.7
     restart: always
     container_name: "mysqldb"
+    env_file:
+      - .env
     environment:
-      MYSQL_DATABASE: 'test'
+      MYSQL_DATABASE: ${DB}
       # Password for root access
-      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: ${PASSWORD}
     ports:
       # <Port exposed> : < MySQL Port running inside container>
-      - '3306:3306'
+      - ${DB_PORT}:3306
     expose:
       # Opens port 3306 on the container
-      - '3306'
+      - '${DB_PORT}'
       # Where our data will be persisted
   main:
     container_name: main
@@ -24,14 +26,11 @@ services:
     volumes:
       - .:/usr/src/app
     ports:
-      - 4000:3000
+      - ${PORT}:3000
       - 9229:9229
     command: npm run start:dev
     env_file:
       - .env
-    environment:
-      DATABASE_URL: ${TYPEORM_URL}
-      TYPEORM_MIGRATIONS: dist/migration/*.js
     depends_on:
       - mysqldb
   

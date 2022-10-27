@@ -11,10 +11,10 @@ import { NominationsModule } from './nominations/nominations.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'mysqldb',
-      username: 'root',
-      database: 'test',
-      password: 'password',
+      host: process.env.HOST,
+      username: process.env.USERNAME,
+      database: process.env.DB,
+      password: process.env.PASSWORD,
       entities: [`dist/**/*.entity.js`],
       autoLoadEntities:true,
       synchronize: true,

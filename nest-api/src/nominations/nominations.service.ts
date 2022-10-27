@@ -30,8 +30,6 @@ export class NominationsService {
     nomination.merchant.id = createNominationDto.merchantId;
     nomination.category.id = createNominationDto.catagoryId;
     
-
-    console.log(nomination);
     return this.nominationRepository.save(nomination);
   }
 
