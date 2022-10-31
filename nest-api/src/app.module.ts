@@ -6,6 +6,7 @@ import { InitializationService } from './init';
 import { CategoriesModule } from './categories/categories.module';
 import { MerchantsModule } from './merchants/merchants.module';
 import { NominationsModule } from './nominations/nominations.module';
+import { LeadsModule } from './leads/leads.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { NominationsModule } from './nominations/nominations.module';
     CategoriesModule,
     MerchantsModule,
     NominationsModule,
+    LeadsModule,
   ],
   controllers: [AppController],
   providers: [AppService, InitializationService],
