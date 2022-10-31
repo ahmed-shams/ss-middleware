@@ -10,7 +10,7 @@ services:
     environment:
       MYSQL_DATABASE: ${DB}
       # Password for root access
-      MYSQL_ROOT_PASSWORD: ${PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
       # <Port exposed> : < MySQL Port running inside container>
       - ${DB_PORT}:3306
@@ -26,7 +26,7 @@ services:
     volumes:
       - .:/usr/src/app
     ports:
-      - ${PORT}:3000
+      - ${PORT}:${PORT}
       - 9229:9229
     command: npm run start:dev
     env_file:
