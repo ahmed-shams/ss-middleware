@@ -6,7 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { HttpService } from '@nestjs/axios';
 import { CreateLeadResponseDto } from './dto/create-lead-response.dto';
 
-const token = `00D52000000JQ0m!AQ8AQEpPJNf58V38F0nqai3b6vhYx6CJac9ay7OtTQjgkqXJ29O_Ab9CgeHbNksw5EBlTc_lfWhSv7MLL2zWg9_BFplGjuV6`
+const token = `00D52000000JQ0m!AQ8AQM.yk5sPLfpIjqCgMjYSV5m4YefsvQ_T3RFXvwfmBsZKhPD.H3Y8KTwKGZW5hFIVQRmOStqSYdDTXN8nPWEh__ad4X6W`;
 const config = {
   headers: { Authorization: `Bearer ${process.env.TOKEN || token}` }
 };
@@ -24,11 +24,8 @@ export class LeadsController {
     return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
       createLeadDto
       , config).then((r) => {
-
-        return r.data
-      }).catch((e) => {
-        return e;
-      });
+        return r.data;
+      })
   }
 
   // @Get()
