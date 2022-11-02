@@ -166,4 +166,4 @@ const SecondStreetApiExamples = {
 }
 
 await SecondStreetApiExamples.start();
-await SecondStreetApiExamples.getWinnersReport(2053, 623764, 746881);
+await SecondStreetApiExamples.getWinnersReport(2053, 767221 , 908081);

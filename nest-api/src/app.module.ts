@@ -8,6 +8,8 @@ import { MerchantsModule } from './merchants/merchants.module';
 import { NominationsModule } from './nominations/nominations.module';
 import { LeadsModule } from './leads/leads.module';
 import { ConfigModule } from '@nestjs/config';
+import { ReportsModule } from './reports/reports.module';
+import { ReportsService } from './reports/reports.service';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { ConfigModule } from '@nestjs/config';
     MerchantsModule,
     NominationsModule,
     LeadsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, InitializationService],
