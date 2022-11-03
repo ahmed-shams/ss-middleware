@@ -5,8 +5,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
-    .setTitle('NestJs example')
-    .setDescription('The nest API description')
+    .setTitle('Excolo API Swagger')
+    .setDescription('Excolo API endpoints description')
     .addBearerAuth()
     .setVersion('1.0')
     .addTag('nestJs')
