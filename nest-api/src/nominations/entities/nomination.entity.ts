@@ -1,22 +1,23 @@
 // import { Merchant } from "src/merchants/entities/merchant.entity";
 // import { Category } from "src/categories/entities/category.entity";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { AuditedEntity } from "src/entity/base-entity";
 
+@Index("category_entity_name_UNIQUE", ["category", "entity_name"], { unique: true })
 @Entity()
 export class Nomination extends AuditedEntity {
 
     @PrimaryGeneratedColumn('increment')
     @Column({ primary:true})
-    id: number;
+    id?: number;
 
     
-    @Column({ nullable: false, type: 'varchar', length: 45 })
+    @Column({ nullable: false, type: 'varchar', length: 250 })
     entity_name: string;
 
-    @Column({ nullable: false, type: 'varchar', length: 45 })
+    @Column({ nullable: false, type: 'varchar', length: 250 })
     category: string;
-
+   
     @Column({ nullable: false, type: 'int', default:1})
     vote_count?: number;
 

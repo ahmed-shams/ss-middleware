@@ -23,6 +23,7 @@ import { ReportsService } from './reports/reports.service';
       entities: [`dist/**/*.entity.js`],
       autoLoadEntities: true,
       synchronize: true,
+      debug:true
     }),
     CategoriesModule,
     MerchantsModule,

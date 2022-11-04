@@ -50,10 +50,9 @@ export class ReportsService {
             });
 
             responseJson = await response.json();
-            console.log(responseJson);
 
         } catch (e) {
-            console.log("Error downloading report");
+            console.log("Error downloading report: ", e);
     
         }
         let result = await this.parseWinnerReport(responseJson.reports[0].file_url);
