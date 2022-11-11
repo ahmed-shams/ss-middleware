@@ -26,12 +26,8 @@ export class ReportsService {
         promotionId,
         organizationPromotionId) {
 
-
-
-
         const token = await this.postAuth();
         let response, responseJson;
-
 
         try {
             const url = `${this.SecondStreetApiExamples.reportsUrl}?organizationId=${organizationId}&organizationPromotionId=${organizationPromotionId}`;
@@ -49,7 +45,7 @@ export class ReportsService {
                 }
             });
 
-            responseJson = await response.json();
+            responseJson =  response.json();
 
         } catch (e) {
             console.log("Error downloading report: ", e);
