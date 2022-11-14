@@ -7,6 +7,8 @@ import { AuditedEntity } from "src/entity/base-entity";
 @Entity()
 export class Nomination extends AuditedEntity {
 
+    //city?,state,businnessname
+
     @PrimaryGeneratedColumn('increment')
     @Column({ primary:true})
     id?: number;

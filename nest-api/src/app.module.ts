@@ -10,6 +10,8 @@ import { LeadsModule } from './leads/leads.module';
 import { ConfigModule } from '@nestjs/config';
 import { ReportsModule } from './reports/reports.module';
 import { ReportsService } from './reports/reports.service';
+import { BuzzboardModule } from './buzzboard/buzzboard.module';
+import { SalesForceModule } from './sales-force/sales-force.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ReportsService } from './reports/reports.service';
     NominationsModule,
     LeadsModule,
     ReportsModule,
+    BuzzboardModule,
+    SalesForceModule
   ],
   controllers: [AppController],
   providers: [AppService, InitializationService],
