@@ -57,6 +57,8 @@ export class NominationsService {
     let leads:Array<CreateLeadDto> ;
 
     for (let index = 0; index < 10; index++) {
+
+    
       
       console.log('Created Leads for: ', await this.createLeads({
         Company: nominationsFromSF[index]['Voted For Entry Name'],
@@ -76,7 +78,16 @@ export class NominationsService {
       headers: { Authorization: `Bearer ${process.env.TOKEN}` }
     };
     return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
-    createLeadDto
+    {
+      "Company": createLeadDto.Company,
+      "LastName": createLeadDto.LastName,
+      "Phone": "123-456-5555",
+      "OwnerId": "005G0000003tIZMIA2",
+      "Market__c": "Connecticut",
+      "Business_Unit__c": "328",
+      "LeadSource": "SS Best Of CT 22",
+      "SS_Merchant_Category__c": ""
+      }
     , config).then((r) => {
       return r.data;
     })
