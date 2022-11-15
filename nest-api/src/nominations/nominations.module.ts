@@ -8,7 +8,7 @@ import { HttpModule, HttpService } from '@nestjs/axios';
 import { ReportsService } from 'src/reports/reports.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Nomination]), ReportsModule],
+  imports: [TypeOrmModule.forFeature([Nomination]), ReportsModule, HttpModule ],
   controllers: [NominationsController],
   providers: [NominationsService]
 })

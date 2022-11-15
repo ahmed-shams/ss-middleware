@@ -13,7 +13,6 @@ export class BuzzboardService {
 
   async create(createBuzzboardDto: CreateBuzzboardDto) {
 
-    console.log('cacclback url : ' ,process.env.BUZZBOARD_CALLBACK_URL)
     const response = await this.httpService.axiosRef.post('https://apis.buzzboard.com/v5.0/records/enrich',
       {
         business_name: createBuzzboardDto.BusinessName,
@@ -28,28 +27,7 @@ export class BuzzboardService {
       }
     }
     )
-
-    console.log(response.data);
-
-    //   const response = await fetch('https://apis.buzzboard.com/v5.0/records/enrich', {
-    //     method: 'POST',
-    //     body: 
-    //     {
-    //         business_name: createBuzzboardDto.BusinessName,
-    //         city: createBuzzboardDto.City,
-    //         callback_url: process.env.BUZZBOARD_CALLBACK_URL
-    //     },
-    //     headers: {
-    //       'cache-control': 'no-cache',
-    //       'authorization': `Bearer ${process.env.BUZZBOARD_TOKEN}`,
-    //       'X-Authorization': `Bearer ${process.env.BUZZBOARD_TOKEN}`,
-    //       'content-type': 'application/json'
-    //   }
-    // });
-
     return response.status;
-
-
   }
 
   findAll() {

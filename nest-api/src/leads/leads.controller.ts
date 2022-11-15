@@ -8,7 +8,7 @@ import { CreateLeadResponseDto } from './dto/create-lead-response.dto';
 
 const token = `00D52000000JQ0m!AQ8AQM.yk5sPLfpIjqCgMjYSV5m4YefsvQ_T3RFXvwfmBsZKhPD.H3Y8KTwKGZW5hFIVQRmOStqSYdDTXN8nPWEh__ad4X6W`;
 const config = {
-  headers: { Authorization: `Bearer ${process.env.TOKEN || token}` }
+  headers: { Authorization: `Bearer ${process.env.TOKEN}` }
 };
 @ApiTags('Leads')
 @Controller('leads')

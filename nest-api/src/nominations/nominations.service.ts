@@ -2,6 +2,8 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from 'src/categories/entities/category.entity';
+import { CreateLeadResponseDto } from 'src/leads/dto/create-lead-response.dto';
+import { CreateLeadDto } from 'src/leads/dto/create-lead.dto';
 import { Merchant } from 'src/merchants/entities/merchant.entity';
 import { ReportsService } from 'src/reports/reports.service';
 // import { ReportsService } from 'src/reports/reports.service';
@@ -17,10 +19,11 @@ export class NominationsService {
   constructor(@InjectRepository(Nomination) private readonly nominationRepository: Repository<Nomination>,
     private readonly reportsService: ReportsService,
     private readonly entityManager: EntityManager,
+    private readonly httpService: HttpService
   ) {
   }
 
-  async upsertNomincations(nominations: Array<Nomination>) {
+  async upsertNominations(nominations: Array<Nomination>) {
 
     await this.entityManager.createQueryBuilder()
       .insert().into(Nomination).values(nominations)
@@ -38,6 +41,8 @@ export class NominationsService {
     const { organizationId, organizationPromotionId, promotionId }
       = fetchNominationDto;
     const nominationsFromSF: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
+    
+    console.log(nominationsFromSF[0]);
     const nominations: Array<Nomination> = nominationsFromSF.map(x => {
 
       return {
@@ -49,9 +54,32 @@ export class NominationsService {
 
     });
 
-    await this.upsertNomincations(nominations);
+    let leads:Array<CreateLeadDto> ;
+
+    for (let index = 0; index < 10; index++) {
+      
+      console.log('Created Leads for: ', await this.createLeads({
+        Company: nominationsFromSF[index]['Voted For Entry Name'],
+        LastName: nominationsFromSF[index]['Last Name']
+      })
+
+      )
+    }
+
+    // await this.upsertNominations(nominations);
     return { success: true };
 
+  }
+
+  createLeads(createLeadDto: CreateLeadDto){
+    const config = {
+      headers: { Authorization: `Bearer ${process.env.TOKEN}` }
+    };
+    return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
+    createLeadDto
+    , config).then((r) => {
+      return r.data;
+    })
   }
 
 
@@ -102,3 +130,7 @@ export class NominationsService {
     return this.nominationRepository.delete({ id });
   }
 }
+function createLeadDto<T>(arg0: string, createLeadDto: any, config: any) {
+  throw new Error('Function not implemented.');
+}
+

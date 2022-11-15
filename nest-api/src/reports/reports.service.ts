@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import  {parse} from 'papaparse'
 import fetch from 'node-fetch';
 import { HttpService } from '@nestjs/axios';
+import { report } from 'process';
 
 @Injectable()
 export class ReportsService {
@@ -31,7 +32,6 @@ export class ReportsService {
 
         try {
             const url = `${this.SecondStreetApiExamples.reportsUrl}?organizationId=${organizationId}&organizationPromotionId=${organizationPromotionId}`;
-            console.log(url);
             response = await fetch(url, {
                 method: 'POST',
                 body: `{"reports": [ { "report_type_id": 8 ,"matchup_id": 3058437, "field_id":0,  "organization_promotion_id": ${organizationPromotionId} } ] }`,//7 is winners report, 2999951 = "Gallery" matchup
@@ -45,12 +45,13 @@ export class ReportsService {
                 }
             });
 
-            responseJson =  response.json();
+            responseJson = await response.json();
 
         } catch (e) {
             console.log("Error downloading report: ", e);
     
         }
+
         let result = await this.parseWinnerReport(responseJson.reports[0].file_url);
         return result;
     };
