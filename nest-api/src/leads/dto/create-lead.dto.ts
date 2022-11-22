@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreateLeadDto {
 
@@ -7,4 +7,13 @@ export class CreateLeadDto {
 
     @ApiProperty()
     LastName: string;
+
+    @ApiPropertyOptional()
+    phoneNumber?: string;
+
+    @ApiPropertyOptional()
+    address?: string;
+
+    @ApiPropertyOptional()
+    website?: string;
 }

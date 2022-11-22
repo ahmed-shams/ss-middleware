@@ -25,7 +25,7 @@ import { SalesForceModule } from './sales-force/sales-force.module';
       entities: [`dist/**/*.entity.js`],
       autoLoadEntities: true,
       synchronize: true,
-      debug:true
+      debug:false
     }),
     CategoriesModule,
     MerchantsModule,

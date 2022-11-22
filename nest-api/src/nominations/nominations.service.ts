@@ -6,6 +6,7 @@ import { CreateLeadResponseDto } from 'src/leads/dto/create-lead-response.dto';
 import { CreateLeadDto } from 'src/leads/dto/create-lead.dto';
 import { Merchant } from 'src/merchants/entities/merchant.entity';
 import { ReportsService } from 'src/reports/reports.service';
+import { GoogleMapsService } from 'src/sales-force/google-maps/google-maps.service';
 // import { ReportsService } from 'src/reports/reports.service';
 import { EntityManager, Repository } from 'typeorm';
 import { CreateNominationDto } from './dto/create-nomination.dto';
@@ -19,7 +20,8 @@ export class NominationsService {
   constructor(@InjectRepository(Nomination) private readonly nominationRepository: Repository<Nomination>,
     private readonly reportsService: ReportsService,
     private readonly entityManager: EntityManager,
-    private readonly httpService: HttpService
+    private readonly httpService: HttpService,
+    private readonly googleAPIService: GoogleMapsService
   ) {
   }
 
@@ -40,37 +42,46 @@ export class NominationsService {
   async fetch(fetchNominationDto: FetchNominationDto) {
     const { organizationId, organizationPromotionId, promotionId }
       = fetchNominationDto;
-    const nominationsFromSF: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
-    
-    console.log(nominationsFromSF[0]);
-    const nominations: Array<Nomination> = nominationsFromSF.map(x => {
+    const nominationsFromSS: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
+    const nominations: Array<Nomination> = await this.prepareNominations(nominationsFromSS);
+
+    await this.upsertNominations(nominations);
+    return { success: true };
+
+  }
+
+  private async prepareNominations(nominationsFromSS: any) {
+    const nominations: Array<Nomination> = nominationsFromSS.map(x => {
 
       return {
         entity_name: x['Voted For Entry Name'],
         category: x['Category'],
         vote_count: 1,
-        id:null
-      }
+        id: null
+      };
 
     });
 
-    let leads:Array<CreateLeadDto> ;
-
     for (let index = 0; index < 10; index++) {
+      let lead:CreateLeadDto = {
+        Company: nominationsFromSS[index]['Voted For Entry Name'],
+        LastName: nominationsFromSS[index]['Last Name']
+      }
+      const searchResult = await this.googleAPIService.textSearch(lead.Company);
+      if(searchResult)
+      {
+        console.log(searchResult)
+        const details = await this.googleAPIService.placeDetails(searchResult.placeId);
+        lead.phoneNumber = details.phoneNumber ;
+        lead.website = details.website
+      }
 
-    
-      
-      console.log('Created Leads for: ', await this.createLeads({
-        Company: nominationsFromSF[index]['Voted For Entry Name'],
-        LastName: nominationsFromSF[index]['Last Name']
-      })
 
-      )
+      console.log('Created Leads for: ', await this.createLeads(lead)
+
+      );
     }
-
-    // await this.upsertNominations(nominations);
-    return { success: true };
-
+    return nominations;
   }
 
   createLeads(createLeadDto: CreateLeadDto){
@@ -81,12 +92,13 @@ export class NominationsService {
     {
       "Company": createLeadDto.Company,
       "LastName": createLeadDto.LastName,
-      "Phone": "123-456-5555",
+      "Phone": createLeadDto.phoneNumber,
       "OwnerId": "005G0000003tIZMIA2",
       "Market__c": "Connecticut",
       "Business_Unit__c": "328",
       "LeadSource": "SS Best Of CT 22",
-      "SS_Merchant_Category__c": ""
+      "SS_Merchant_Category__c": "",
+      "Website": createLeadDto.website
       }
     , config).then((r) => {
       return r.data;
