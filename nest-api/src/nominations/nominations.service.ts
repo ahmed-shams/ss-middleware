@@ -98,7 +98,8 @@ export class NominationsService {
       "Business_Unit__c": "328",
       "LeadSource": "SS Best Of CT 22",
       "SS_Merchant_Category__c": "",
-      "Website": createLeadDto.website
+      "Website": createLeadDto.website,
+      "Address": createLeadDto.address
       }
     , config).then((r) => {
       return r.data;

@@ -1,5 +1,6 @@
 export interface placeDetailsDTO{
     phoneNumber: string,
-    website: string
+    website: string,
+    address: string
 }
 

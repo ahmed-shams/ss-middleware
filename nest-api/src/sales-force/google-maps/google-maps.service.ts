@@ -48,7 +48,8 @@ export class GoogleMapsService {
                 const details = response.data.result;
                  return {
                      phoneNumber: details.formatted_phone_number,
-                     website: details.website
+                     website: details.website,
+                     address: details.formatted_address
                  }
             })
     }
