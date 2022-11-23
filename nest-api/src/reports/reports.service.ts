@@ -46,17 +46,20 @@ export class ReportsService {
             });
 
             responseJson = await response.json();
+            console.log('second result ', responseJson );
+            let result = await this.parseWinnerReport(responseJson.reports[0].file_url);
+            return result;
 
         } catch (e) {
             console.log("Error downloading report: ", e);
-    
+            throw e;
         }
 
-        let result = await this.parseWinnerReport(responseJson.reports[0].file_url);
-        return result;
+       
     };
 
     async parseWinnerReport(url) {
+        console.log(url);
         return new Promise(async (resolve, reject) => {
 
             const csvResponse = await  this.httpService.axiosRef.get(url, { responseType: 'blob'})

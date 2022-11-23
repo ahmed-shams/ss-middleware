@@ -28,7 +28,7 @@ export class GoogleMapsService {
                 let matchedPlace:textSearchDTO;
                 if (Array.isArray(googleResults) && googleResults.length) {
                     if (googleResults.length > 1) {
-                        let {place_id: placeId } = googleResults.find(x => x.name === businessName)
+                        let {place_id: placeId } = googleResults.find(x => x.name === businessName)|| {place_id:null}
                         matchedPlace = {
                             placeId
                         }

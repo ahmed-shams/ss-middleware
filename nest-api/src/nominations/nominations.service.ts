@@ -68,18 +68,13 @@ export class NominationsService {
         LastName: nominationsFromSS[index]['Last Name']
       }
       const searchResult = await this.googleAPIService.textSearch(lead.Company);
-      if(searchResult)
+      if(searchResult && searchResult.placeId)
       {
-        console.log(searchResult)
         const details = await this.googleAPIService.placeDetails(searchResult.placeId);
         lead.phoneNumber = details.phoneNumber ;
         lead.website = details.website
+        lead.address = details.address;
       }
-
-
-      console.log('Created Leads for: ', await this.createLeads(lead)
-
-      );
     }
     return nominations;
   }
@@ -91,7 +86,7 @@ export class NominationsService {
     return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
     {
       "Company": createLeadDto.Company,
-      "LastName": createLeadDto.LastName,
+      "LastName": '',
       "Phone": createLeadDto.phoneNumber,
       "OwnerId": "005G0000003tIZMIA2",
       "Market__c": "Connecticut",
