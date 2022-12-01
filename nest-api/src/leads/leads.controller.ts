@@ -22,9 +22,23 @@ export class LeadsController {
   create(@Body() createLeadDto: CreateLeadDto) {
 
     return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
-      createLeadDto
+    {
+      "Company": createLeadDto.Company,
+      "LastName": 'Excolo',
+      "Phone": createLeadDto.phoneNumber,
+      "OwnerId": "005G0000003tIZMIA2",
+      "Market__c": "Connecticut",
+      "Business_Unit__c": "328",
+      "LeadSource": "SS Best Of CT 22",
+      "SS_Merchant_Category__c": "",
+      "Website": createLeadDto.website,
+
+      }
       , config).then((r) => {
         return r.data;
+      }).catch((ex)=>{
+console.log(ex);
+
       })
   }
 

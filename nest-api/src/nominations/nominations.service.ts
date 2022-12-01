@@ -42,7 +42,9 @@ export class NominationsService {
   async fetch(fetchNominationDto: FetchNominationDto) {
     const { organizationId, organizationPromotionId, promotionId }
       = fetchNominationDto;
+    console.log("Getting Report from Second street");
     const nominationsFromSS: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
+    console.log("Downloaded Report from Second street");
     const nominations: Array<Nomination> = await this.prepareNominations(nominationsFromSS);
 
     try{
@@ -79,8 +81,9 @@ export class NominationsService {
         lead.phoneNumber = details.phoneNumber ;
         lead.website = details.website
         lead.address = details.address;
+        console.log(`Created Leads for address ${lead.address}: `);
       }
-      console.log(`Created Leads for address ${lead.address}: `);
+     
      await this.createLeads(lead)
     }
     return nominations;
@@ -93,7 +96,7 @@ export class NominationsService {
     return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
     {
       "Company": createLeadDto.Company,
-      "LastName": '',
+      "LastName": 'Excolo',
       "Phone": createLeadDto.phoneNumber,
       "OwnerId": "005G0000003tIZMIA2",
       "Market__c": "Connecticut",
@@ -101,7 +104,7 @@ export class NominationsService {
       "LeadSource": "SS Best Of CT 22",
       "SS_Merchant_Category__c": "",
       "Website": createLeadDto.website,
-      "Address": createLeadDto.address
+
       }
     , config).then((r) => {
       return r.data;

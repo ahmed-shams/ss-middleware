@@ -14,6 +14,7 @@ services:
     ports:
       # <Port exposed> : < MySQL Port running inside container>
       - ${DB_PORT}:3306
+      - 9929:9929
     expose:
       # Opens port 3306 on the container
       - '${DB_PORT}'
@@ -28,7 +29,7 @@ services:
     ports:
       - ${PORT}:${PORT}
       - 9229:9229
-    command: npm run start:dev
+    command: npm run start:debug
     env_file:
       - .env
     depends_on:

@@ -67,6 +67,7 @@ export class ReportsService {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => { 
+                    console.log('Parsed Report')
                    return resolve(results.data)
                 }
             })
