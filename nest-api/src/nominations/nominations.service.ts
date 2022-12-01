@@ -45,7 +45,12 @@ export class NominationsService {
     const nominationsFromSS: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
     const nominations: Array<Nomination> = await this.prepareNominations(nominationsFromSS);
 
+    try{
     await this.upsertNominations(nominations);
+    }
+    catch{
+      "Failed to insert nominations into the database";
+    }
     return { success: true };
 
   }
@@ -75,6 +80,8 @@ export class NominationsService {
         lead.website = details.website
         lead.address = details.address;
       }
+      console.log(`Created Leads for address ${lead.address}: `);
+     await this.createLeads(lead)
     }
     return nominations;
   }
