@@ -81,10 +81,9 @@ export class NominationsService {
         lead.phoneNumber = details.phoneNumber ;
         lead.website = details.website
         lead.address = details.address;
-        console.log(`Created Leads for address ${lead.address}: `);
       }
      
-     await this.createLeads(lead)
+    console.log( await this.createLeads(lead));
     }
     return nominations;
   }
@@ -93,8 +92,8 @@ export class NominationsService {
     const config = {
       headers: { Authorization: `Bearer ${process.env.TOKEN}` }
     };
-    return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
-    {
+
+    const body: any =   {
       "Company": createLeadDto.Company,
       "LastName": 'Excolo',
       "Phone": createLeadDto.phoneNumber,
@@ -106,6 +105,20 @@ export class NominationsService {
       "Website": createLeadDto.website,
 
       }
+
+    if(createLeadDto.address){
+      const address = createLeadDto.address.split(',');
+      //27 Main St, Chatham, NY 12037, USA
+      body.Street = address[0];
+      body.City = address[1];
+      const stateWithZip = address[2].split(' ');
+      if (stateWithZip && stateWithZip.length >= 2) {
+        body.State = stateWithZip[0];
+        body.PostalCode = stateWithZip[1];
+      }
+    }
+    return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
+  body
     , config).then((r) => {
       return r.data;
     })
