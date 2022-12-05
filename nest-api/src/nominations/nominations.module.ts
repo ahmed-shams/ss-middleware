@@ -7,9 +7,10 @@ import { ReportsModule } from 'src/reports/reports.module';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { ReportsService } from 'src/reports/reports.service';
 import { SalesForceModule } from 'src/sales-force/sales-force.module';
+import { NominationRequestModule } from 'src/nomination-request/nomination-request.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Nomination]), ReportsModule, HttpModule, SalesForceModule ],
+  imports: [TypeOrmModule.forFeature([Nomination]), ReportsModule, HttpModule, SalesForceModule, NominationRequestModule ],
   controllers: [NominationsController],
   providers: [NominationsService]
 })

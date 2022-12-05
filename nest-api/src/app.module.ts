@@ -12,6 +12,7 @@ import { ReportsModule } from './reports/reports.module';
 import { ReportsService } from './reports/reports.service';
 import { BuzzboardModule } from './buzzboard/buzzboard.module';
 import { SalesForceModule } from './sales-force/sales-force.module';
+import { NominationRequestModule } from './nomination-request/nomination-request.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { SalesForceModule } from './sales-force/sales-force.module';
     LeadsModule,
     ReportsModule,
     BuzzboardModule,
-    SalesForceModule
+    SalesForceModule,
+    NominationRequestModule
   ],
   controllers: [AppController],
   providers: [AppService, InitializationService],

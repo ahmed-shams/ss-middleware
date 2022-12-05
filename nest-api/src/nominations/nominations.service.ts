@@ -5,6 +5,8 @@ import { Category } from 'src/categories/entities/category.entity';
 import { CreateLeadResponseDto } from 'src/leads/dto/create-lead-response.dto';
 import { CreateLeadDto } from 'src/leads/dto/create-lead.dto';
 import { Merchant } from 'src/merchants/entities/merchant.entity';
+import { NominationRequest } from 'src/nomination-request/entities/nomination-request.entity';
+import { NominationRequestService } from 'src/nomination-request/nomination-request.service';
 import { ReportsService } from 'src/reports/reports.service';
 import { GoogleMapsService } from 'src/sales-force/google-maps/google-maps.service';
 // import { ReportsService } from 'src/reports/reports.service';
@@ -21,7 +23,8 @@ export class NominationsService {
     private readonly reportsService: ReportsService,
     private readonly entityManager: EntityManager,
     private readonly httpService: HttpService,
-    private readonly googleAPIService: GoogleMapsService
+    private readonly googleAPIService: GoogleMapsService,
+    private readonly nominationRequestService: NominationRequestService
   ) {
   }
 
@@ -40,8 +43,19 @@ export class NominationsService {
   }
 
   async fetch(fetchNominationDto: FetchNominationDto) {
-    const { organizationId, organizationPromotionId, promotionId }
+    const { organizationId, organizationPromotionId, promotionId, city, state, contestTitle }
       = fetchNominationDto;
+    await this.nominationRequestService.create({
+      city,
+      contestTitle,
+      organizationId,
+      organizationPromotionId,
+      promotionId,
+      state
+    })
+    //uncomment the line below
+    // return;
+
     console.log("Getting Report from Second street");
     const nominationsFromSS: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
     console.log("Downloaded Report from Second street");

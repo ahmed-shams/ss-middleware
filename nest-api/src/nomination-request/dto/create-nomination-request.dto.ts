@@ -1,14 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-export class FetchNominationDto {
-
-    @ApiProperty({required:true})
+export class CreateNominationRequestDto {
+    @ApiProperty()
     promotionId: number;
 
-    @ApiProperty({required:true})
+    @ApiProperty()
     organizationPromotionId: number;
 
-    @ApiProperty({required:true})
+    @ApiProperty()
     organizationId: number;
 
     @ApiProperty()
