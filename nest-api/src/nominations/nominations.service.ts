@@ -107,7 +107,7 @@ export class NominationsService {
       count(*) as vote_count
       from vote 
       inner join nomination 
-      On nomination.entity_name = vote.entity_name AND ${phone} != ''
+      On nomination.entity_name = vote.entity_name 
       group by nomination.id, nomination.entity_name, nomination.category, address, ${phone}
       order by ${phone} DESC
       ;`
@@ -246,7 +246,7 @@ export class NominationsService {
         body.PostalCode = stateWithZip[1];
       }
     }
-    return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
+    return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
       body
       , config).then((r) => {
         return r.data;
