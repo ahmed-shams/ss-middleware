@@ -22,7 +22,7 @@ export class GoogleMapsService {
 
     textSearch(businessName: string): Promise<textSearchDTO> {
         return this.httpService.axiosRef.get(
-            `${GOOGLE_MAP_API.TEXT_SEARCH}?query=${businessName} in USA&key=${this.API_KEY}`)
+            encodeURI(`${GOOGLE_MAP_API.TEXT_SEARCH}?query=${businessName} in USA&key=${this.API_KEY}`))
             .then((response) => {
                 const googleResults = response.data.results;
                 let matchedPlace:textSearchDTO;

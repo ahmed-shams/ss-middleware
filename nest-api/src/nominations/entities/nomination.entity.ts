@@ -14,14 +14,26 @@ export class Nomination extends AuditedEntity {
     id?: number;
 
     
-    @Column({ nullable: false, type: 'varchar', length: 250 })
+    @Column({ nullable: false, type: 'nvarchar', length: 500 })
     entity_name: string;
 
     @Column({ nullable: false, type: 'varchar', length: 250 })
     category: string;
+
+    @Column({ nullable: false, type: 'varchar', length: 500 })
+    address: string;
+    
+
+    @Column({ name:'phone-number', nullable: false, type: 'varchar', length: 250 })
+    phoneNumber: string;
+
+    @Column({ name:'website', nullable: false, type: 'varchar', length: 250 })
+    website: string;
+    
    
     @Column({ nullable: false, type: 'int', default:1})
     vote_count?: number;
+
 
     // @Column({ type:'integer'})
     // location_id: number;

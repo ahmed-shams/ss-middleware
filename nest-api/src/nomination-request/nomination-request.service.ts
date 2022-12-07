@@ -12,6 +12,13 @@ export class NominationRequestService {
 
   }
   async create(createNominationRequestDto: CreateNominationRequestDto): Promise<NominationRequest> {
+   var alreadyExist = await this.nominationRequestRepo.findOne({where:{
+      contestTitle: createNominationRequestDto.contestTitle
+    } });
+
+    console.log('alreadyExist ', alreadyExist)
+    
+    if(!alreadyExist){
     let nominationRequest: NominationRequest = {
       promotionId: createNominationRequestDto.promotionId,
       organizationPromotionId: createNominationRequestDto.organizationPromotionId,
@@ -22,6 +29,9 @@ export class NominationRequestService {
       id:undefined
     }
     return this.nominationRequestRepo.save(nominationRequest);
+
+  }
+  return;
   }
 
   findAll() {

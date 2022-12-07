@@ -23,13 +23,13 @@ export class NominationsController {
     return this.nominationsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() updateNominationDto: UpdateNominationDto) {
-    return this.nominationsService.update(id, updateNominationDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: number, @Body() updateNominationDto: UpdateNominationDto) {
+  //   return this.nominationsService.update(id, updateNominationDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.nominationsService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.nominationsService.remove(+id);
+  // }
 }

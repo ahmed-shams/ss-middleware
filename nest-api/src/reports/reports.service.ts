@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import  {parse} from 'papaparse'
+import { parse, NODE_STREAM_INPUT } from 'papaparse'
 import fetch from 'node-fetch';
 import { HttpService } from '@nestjs/axios';
 import { report } from 'process';
+import * as fs from 'fs'
+
+import * as stream from 'stream';
+import { promisify } from 'util';
+import { firstValueFrom } from 'rxjs';
+
 
 @Injectable()
 export class ReportsService {
 
-    constructor(private readonly httpService: HttpService){
+    constructor(private readonly httpService: HttpService) {
 
     }
 
@@ -20,6 +26,19 @@ export class ReportsService {
         organizationPromotionsUrl: "https://api.secondstreetapp.com/organization_promotions",
         reportsUrl: "https://api.secondstreetapp.com/reports",
         matchupsUrl: "https://api.secondstreetapp.com/matchups",
+    }
+
+    async downloadFile(fileUrl: string, outputLocationPath: string): Promise<any> {
+        const writer = fs.createWriteStream(outputLocationPath);
+        const finished = promisify(stream.finished);
+        return this.httpService.axiosRef({
+            method: 'get',
+            url: fileUrl,
+            responseType: 'stream',
+        }).then(async response => {
+            response.data.pipe(writer);
+            return await finished(writer);
+        });
     }
 
     async getWinnersReport(
@@ -46,34 +65,67 @@ export class ReportsService {
             });
 
             responseJson = await response.json();
-            console.log('second result ', responseJson );
-            let result = await this.parseWinnerReport(responseJson.reports[0].file_url);
-            return result;
+            console.log('second result ', responseJson);
+            return responseJson;
 
         } catch (e) {
             console.log("Error downloading report: ", e);
             throw e;
         }
 
-       
+
     };
 
     async parseWinnerReport(url) {
         console.log(url);
-        return new Promise(async (resolve, reject) => {
-
-            const csvResponse = await  this.httpService.axiosRef.get(url, { responseType: 'blob'})
-            await parse(csvResponse.data, {
+        // await this.downloadFile(url, 'myfile.csv');
+        // console.log('Downloaded sucssfully');
+        // return;
+        return new Promise<void>(async (resolve, reject) => {
+            const parseStream = parse(NODE_STREAM_INPUT, {
                 header: true,
                 skipEmptyLines: true,
-                complete: (results) => { 
-                    console.log('Parsed Report')
-                   return resolve(results.data)
+                step: function (results, parser) {
+                    console.log("Row data:", results.data);
+                    console.log("Row errors:", results.errors);
                 }
-            })
-           
+            });
+
+            const { data: res } = await firstValueFrom(
+                this.httpService.get(url, { responseType: 'stream' }),
+            );
+
+            const dataStream = res.pipe(parseStream);
+
+            const data = [];
+
+            parseStream.on('data', (chunk) => {
+
+                console.log('DAAATA: ', chunk)
+                data.push(chunk);
+            });
+
+            dataStream.on('finish', () => {
+                console.log(data);
+                console.log(data.length);
+                resolve();
+            });
+
+            // return parse(url, {
+            //     download: true,
+            //     header: true,
+            //     skipEmptyLines: true,
+            //     step: function (results, parser) {
+            //         console.log("Row data:", results.data);
+            //         console.log("Row errors:", results.errors);
+            //     },
+            //     complete: function () {
+            //         return resolve();
+            //     }
+            // })
+
         });
-       
+
 
     }
 
