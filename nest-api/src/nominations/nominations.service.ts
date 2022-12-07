@@ -184,7 +184,7 @@ export class NominationsService {
 
       parseStream.on('data', async (chunk) => {
         nominationsTemp.push(chunk)
-        if (nominationsTemp.length > 10) {
+        if (nominationsTemp.length > 15000) {
           parseStream.pause();
           console.log("Pushing chunck of 15000 records")
           try {
