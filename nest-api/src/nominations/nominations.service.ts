@@ -97,7 +97,9 @@ export class NominationsService {
     const nominationsForLeads: Array<Nomination> = 
    await this.entityManager.query(
 
-      `SELECT nomination.entity_name as entity_name,
+      `SELECT
+      nomination.id as id,
+      nomination.entity_name as entity_name,
        nomination.category as category,
         nomination.address as address,
       ${phone},
@@ -106,7 +108,7 @@ export class NominationsService {
       from vote 
       inner join nomination 
       On nomination.entity_name = vote.entity_name AND ${phone} != ''
-      group by nomination, nomination.entity_name, nomination.category, address, ${phone}
+      group by nomination.id, nomination.entity_name, nomination.category, address, ${phone}
       order by ${phone} DESC
       ;`
     )
