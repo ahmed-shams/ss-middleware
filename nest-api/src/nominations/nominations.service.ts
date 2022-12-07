@@ -102,7 +102,7 @@ export class NominationsService {
       nomination.entity_name as entity_name,
        nomination.category as category,
         nomination.address as address,
-      ${phone},
+      ${phone} as phoneNumber,
       website, 
       count(*) as vote_count
       from vote 
@@ -184,7 +184,7 @@ export class NominationsService {
 
       parseStream.on('data', async (chunk) => {
         nominationsTemp.push(chunk)
-        if (nominationsTemp.length > 15000) {
+        if (nominationsTemp.length > 10) {
           parseStream.pause();
           console.log("Pushing chunck of 15000 records")
           try {
@@ -217,11 +217,13 @@ export class NominationsService {
   }
 
 
-  createLeads(createLeadDto: CreateLeadDto) {
+  async createLeads(createLeadDto: CreateLeadDto) {
     const config = {
       headers: { Authorization: `Bearer ${process.env.TOKEN}` }
     };
 
+    console.log('Creating Lead with DTO:', createLeadDto);
+    
     const body: any = {
       "Company": createLeadDto.Company,
       "LastName": 'Excolo',
@@ -230,7 +232,6 @@ export class NominationsService {
       "Market__c": "Connecticut",
       "Business_Unit__c": "328",
       "LeadSource": "SS Best Of CT 22",
-      "SS_Merchant_Category__c": "",
       "Website": createLeadDto.website,
 
     }
@@ -246,11 +247,18 @@ export class NominationsService {
         body.PostalCode = stateWithZip[1];
       }
     }
-    return this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
-      body
-      , config).then((r) => {
-        return r.data;
-      })
+
+    try {
+      await this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
+        body
+        , config).then((r) => {
+          return r.data;
+        })
+    }
+    catch (ex) {
+      console.log("excetpion: ", ex);
+    }
+    return 
   }
 
 

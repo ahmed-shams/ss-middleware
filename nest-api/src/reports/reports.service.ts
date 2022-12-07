@@ -47,6 +47,7 @@ export class ReportsService {
         organizationPromotionId) {
 
         const token = await this.postAuth();
+        console.log('token: ', token)
         let response, responseJson;
 
         try {
