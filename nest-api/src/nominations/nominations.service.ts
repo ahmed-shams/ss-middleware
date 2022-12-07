@@ -252,6 +252,7 @@ export class NominationsService {
       await this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
         body
         , config).then((r) => {
+          console.log(r.data);
           return r.data;
         })
     }
