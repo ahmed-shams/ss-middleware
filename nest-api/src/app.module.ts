@@ -15,6 +15,7 @@ import { SalesForceModule } from './sales-force/sales-force.module';
 import { NominationRequestModule } from './nomination-request/nomination-request.module';
 import { VotesModule } from './votes/votes.module';
 import { NominationsService } from './nominations/nominations.service';
+import { LogsModule } from './logs/logs.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { NominationsService } from './nominations/nominations.service';
     BuzzboardModule,
     SalesForceModule,
     NominationRequestModule,
-    VotesModule
+    VotesModule,
+    LogsModule
   ],
   controllers: [AppController],
   providers: [AppService, InitializationService],

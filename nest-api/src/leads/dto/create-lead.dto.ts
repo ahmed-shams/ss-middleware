@@ -16,4 +16,7 @@ export class CreateLeadDto {
 
     @ApiPropertyOptional()
     website?: string;
+
+    @ApiPropertyOptional()
+    category?: string;
 }

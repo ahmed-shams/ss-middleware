@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { Category } from 'src/categories/entities/category.entity';
 import { CreateLeadResponseDto } from 'src/leads/dto/create-lead-response.dto';
 import { CreateLeadDto } from 'src/leads/dto/create-lead.dto';
+import { LogsService } from 'src/logs/logs.service';
 import { Merchant } from 'src/merchants/entities/merchant.entity';
 import { NominationRequest } from 'src/nomination-request/entities/nomination-request.entity';
 import { NominationRequestService } from 'src/nomination-request/nomination-request.service';
@@ -20,6 +21,9 @@ import { CreateNominationDto } from './dto/create-nomination.dto';
 import { FetchNominationDto } from './dto/fetch-nominations.dto';
 import { UpdateNominationDto } from './dto/update-nomination.dto';
 import { Nomination } from './entities/nomination.entity';
+import { v4 as uuidv4, v6 as uuidv6 } from 'uuid';
+
+
 
 @Injectable()
 export class NominationsService {
@@ -30,7 +34,8 @@ export class NominationsService {
     private readonly httpService: HttpService,
     private readonly googleAPIService: GoogleMapsService,
     private readonly nominationRequestService: NominationRequestService,
-    private readonly voteService: VotesService
+    private readonly voteService: VotesService,
+    private readonly logService: LogsService
   ) {
   }
 
@@ -50,10 +55,19 @@ export class NominationsService {
   }
 
   async fetch(fetchNominationDto: FetchNominationDto) {
-    const { organizationId, organizationPromotionId, promotionId, city, state, contestTitle }
-      = fetchNominationDto;
+ 
+    const id = uuidv4()
+    await this.logService.log(id, "Logs Creation Started!")
+    this.addOperations(fetchNominationDto, id);
+  
+    return { success: true, id };
 
-    await this.remove();
+  }
+
+  private async addOperations(fetchNominationDto: FetchNominationDto, id:string){
+    const { organizationId, organizationPromotionId, promotionId, city, state, contestTitle }
+    = fetchNominationDto;
+    // await this.remove();
     await this.voteService.remove();
     await this.nominationRequestService.create({
       city,
@@ -62,32 +76,31 @@ export class NominationsService {
       organizationPromotionId,
       promotionId,
       state
-    })
+    });
 
-    console.log("Getting Report from Second street");
+    this.logService.log(id, "Getting Report from Second street");
     const reportJson: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
-    await this.parseWinnerReport(reportJson.reports[0].file_url);
+    this.logService.log(id, `second result ${reportJson}`);
+    await this.parseWinnerReport(reportJson.reports[0].file_url, id);
     
     
-    await this.PrepareAndCreateLeads();
-  
-    return { success: true };
-
+    await this.PrepareAndCreateLeads(id);
   }
 
-  private async PrepareAndCreateLeads() {
+  private async PrepareAndCreateLeads(id) {
     const nominationsForLeads: Array<Nomination> = await this.getNominations(1,10);
 
-      console.log(nominationsForLeads.length)
+      // console.log(nominationsForLeads.length)
     nominationsForLeads.forEach(async (nomination) => {
       let lead: CreateLeadDto = {
         Company: nomination.entity_name,
         LastName: '',
         address: nomination.address,
         website: nomination.website,
-        phoneNumber: nomination.phoneNumber
+        phoneNumber: nomination.phoneNumber,
+        category: nomination.category
       };
-      await this.createLeads(lead);
+      await this.createLeads(lead, id);
     });
   }
 
@@ -163,8 +176,8 @@ export class NominationsService {
     return { nominations, votes};
   }
 
-  async parseWinnerReport(url) {
-    console.log(url);
+  async parseWinnerReport(url, id) {
+    this.logService.log(id, url);
     let nominationsTemp = [];
     return new Promise<void>(async (resolve, reject) => {
       const parseStream = parse(NODE_STREAM_INPUT, {
@@ -178,16 +191,19 @@ export class NominationsService {
         this.httpService.get(url, { responseType: 'stream' }),
       );
 
+      console.log('line 192');
       const dataStream = res.pipe(parseStream);
 
       // const data = [];
 
       parseStream.on('data', async (chunk) => {
+       console.log('Adding to nomination array')
         nominationsTemp.push(chunk)
         if (nominationsTemp.length > 15000) {
-          parseStream.pause();
-          console.log("Pushing chunck of 15000 records")
           try {
+          parseStream.pause();
+          this.logService.log(id,"Pushing chunck of 15000 records")
+          
             const { nominations, votes} = await this.prepareNominations(nominationsTemp);
             await this.voteService.create(votes)
             await this.upsertNominations(nominations);
@@ -196,10 +212,11 @@ export class NominationsService {
           
           }
           catch (ex) {
-            console.log("Failed to insert nominations into the database");
+            this.logService.log(id,"Failed to insert nominations into the database");
             throw ex;
           }
           finally{
+            this.logService.log(id,"Pushing chunck of less than 15000 records")
             parseStream.end();
             return resolve();
           }
@@ -207,8 +224,14 @@ export class NominationsService {
 
       });
 
-      dataStream.on('finish', () => {
-        console.log('Finished with creating nominations');
+      dataStream.on('finish', async () => {
+        if(nominationsTemp.length){
+          const { nominations, votes} = await this.prepareNominations(nominationsTemp);
+          await this.voteService.create(votes)
+          await this.upsertNominations(nominations);
+          nominationsTemp = [];
+        }
+        this.logService.log(id,'Finished with creating nominations');
         return resolve();
       });
 
@@ -217,12 +240,12 @@ export class NominationsService {
   }
 
 
-  async createLeads(createLeadDto: CreateLeadDto) {
+  async createLeads(createLeadDto: CreateLeadDto, id:string) {
     const config = {
       headers: { Authorization: `Bearer ${process.env.TOKEN}` }
     };
 
-    console.log('Creating Lead with DTO:', createLeadDto);
+    this.logService.log( id, 'Creating Lead with DTO:');
     
     const body: any = {
       "Company": createLeadDto.Company,
@@ -233,6 +256,7 @@ export class NominationsService {
       "Business_Unit__c": "328",
       "LeadSource": "SS Best Of CT 22",
       "Website": createLeadDto.website,
+      "SS_Merchant_Category__c": createLeadDto.category
 
     }
 
@@ -257,7 +281,7 @@ export class NominationsService {
         })
     }
     catch (ex) {
-      console.log("excetpion: ", ex);
+      this.logService.log( id, "excetpion: " + ex);
     }
     return 
   }

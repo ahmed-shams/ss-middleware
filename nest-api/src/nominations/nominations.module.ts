@@ -9,11 +9,18 @@ import { ReportsService } from 'src/reports/reports.service';
 import { SalesForceModule } from 'src/sales-force/sales-force.module';
 import { NominationRequestModule } from 'src/nomination-request/nomination-request.module';
 import { VotesModule } from 'src/votes/votes.module';
+import { LogsModule } from 'src/logs/logs.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Nomination]), ReportsModule, 
-  HttpModule, SalesForceModule, NominationRequestModule, VotesModule ],
+  imports: [TypeOrmModule.forFeature([Nomination]),
+    ReportsModule,
+    HttpModule,
+    SalesForceModule,
+    NominationRequestModule,
+    VotesModule,
+    LogsModule
+  ],
   controllers: [NominationsController],
   providers: [NominationsService]
 })
-export class NominationsModule {}
+export class NominationsModule { }

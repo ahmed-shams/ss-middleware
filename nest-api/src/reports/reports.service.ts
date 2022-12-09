@@ -47,7 +47,6 @@ export class ReportsService {
         organizationPromotionId) {
 
         const token = await this.postAuth();
-        console.log('token: ', token)
         let response, responseJson;
 
         try {
@@ -66,7 +65,7 @@ export class ReportsService {
             });
 
             responseJson = await response.json();
-            console.log('second result ', responseJson);
+          
             return responseJson;
 
         } catch (e) {
