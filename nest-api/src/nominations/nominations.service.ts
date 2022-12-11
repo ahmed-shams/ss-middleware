@@ -78,7 +78,7 @@ export class NominationsService {
       state
     });
 
-    this.logService.log(id, "Getting Report from Second Street");
+    this.logService.log(id, "Getting Report from Second Street, (will take approx. 2 minutes)");
     const reportJson: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
     this.logService.log(id, `second result ${reportJson}`);
     await this.parseWinnerReport(reportJson.reports[0].file_url, id);
