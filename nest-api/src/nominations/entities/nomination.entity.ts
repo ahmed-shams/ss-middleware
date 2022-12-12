@@ -34,6 +34,9 @@ export class Nomination extends AuditedEntity {
     @Column({ nullable: false, type: 'int', default:1})
     vote_count?: number;
 
+    @Column({ name:'lead_id', nullable: true, type: 'varchar', length: 250 })
+    leadsId: string;
+
 
     // @Column({ type:'integer'})
     // location_id: number;

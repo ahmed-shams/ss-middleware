@@ -19,4 +19,10 @@ export class CreateLeadDto {
 
     @ApiPropertyOptional()
     category?: string;
+
+
+    @ApiProperty()
+    nominationId: number;
+
+    
 }

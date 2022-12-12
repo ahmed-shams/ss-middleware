@@ -22,6 +22,7 @@ import { FetchNominationDto } from './dto/fetch-nominations.dto';
 import { UpdateNominationDto } from './dto/update-nomination.dto';
 import { Nomination } from './entities/nomination.entity';
 import { v4 as uuidv4, v6 as uuidv6 } from 'uuid';
+import * as jsforce from 'jsforce'
 
 
 
@@ -88,20 +89,33 @@ export class NominationsService {
   }
 
   private async PrepareAndCreateLeads(id) {
-    const nominationsForLeads: Array<Nomination> = await this.getNominations(1,10);
 
-      // console.log(nominationsForLeads.length)
-    nominationsForLeads.forEach(async (nomination) => {
-      let lead: CreateLeadDto = {
-        Company: nomination.entity_name,
-        LastName: '',
-        address: nomination.address,
-        website: nomination.website,
-        phoneNumber: nomination.phoneNumber,
-        category: nomination.category
-      };
-      await this.createLeads(lead, id);
+    var oauth2 = new jsforce.OAuth2({
+      // you can change loginUrl to connect to sandbox or prerelease env.
+      loginUrl : process.env.SF_LOGIN_URL,
+      clientId : process.env.SF_CLIENT_ID,
+      clientSecret : process.env.SF_CLIENT_SECRET,
+      redirectUri : 'http://localhost:8080/',
     });
+    let q = await oauth2.authenticate(process.env.SF_USERNAME, process.env.SF_PASSWORD,(token)=>{
+    })
+
+    const nominationsForLeads: Array<Nomination> = await this.getNominations(1,10);
+ for (let index = 0; index < 10; index++) {
+
+  let nomination = nominationsForLeads[index]
+  let lead: CreateLeadDto = {
+    Company: nomination.entity_name,
+    nominationId: nomination.id,
+    LastName: '',
+    address: nomination.address,
+    website: nomination.website,
+    phoneNumber: nomination.phoneNumber,
+    category: nomination.category
+  };
+  console.log(lead)
+  await this.createLeads(lead, id, q.access_token); 
+ }
   }
 
   private async getNominations(count:number, take: number) {
@@ -115,6 +129,7 @@ export class NominationsService {
       nomination.entity_name as entity_name,
        nomination.category as category,
         nomination.address as address,
+        nomination.lead_id as leadsId,
       ${phone} as phoneNumber,
       website, 
       count(*) as vote_count
@@ -208,7 +223,6 @@ export class NominationsService {
             await this.voteService.create(votes)
             await this.upsertNominations(nominations);
             nominationsTemp = [];
-
           
           }
           catch (ex) {
@@ -240,9 +254,9 @@ export class NominationsService {
   }
 
 
-  async createLeads(createLeadDto: CreateLeadDto, id:string) {
+  async createLeads(createLeadDto: CreateLeadDto, id:string, token:string) {
     const config = {
-      headers: { Authorization: `Bearer ${process.env.TOKEN}` }
+      headers: { Authorization: `Bearer ${token}` }
     };
 
     this.logService.log( id, 'Creating Lead with DTO:');
@@ -273,10 +287,13 @@ export class NominationsService {
     }
 
     try {
-      await this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
+      await this.httpService.axiosRef.post<CreateLeadResponseDto>(`https://hearstnp--test.sandbox.my.salesforce.com/services/data/v55.0/sobjects/Lead`,
         body
-        , config).then((r) => {
-          console.log(r.data);
+        , config).then(async (r) => {
+
+          await this.nominationRepository.save({id:createLeadDto.nominationId,leadsId: r.data.id })
+
+          await this.logService.log(id, `Lead added with id ${createLeadDto.nominationId}`)
           return r.data;
         })
     }

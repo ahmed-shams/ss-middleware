@@ -16,6 +16,7 @@ import { NominationRequestModule } from './nomination-request/nomination-request
 import { VotesModule } from './votes/votes.module';
 import { NominationsService } from './nominations/nominations.service';
 import { LogsModule } from './logs/logs.module';
+import { JsForceModule } from '@ntegral/nestjs-force';
 
 @Module({
   imports: [
@@ -31,6 +32,15 @@ import { LogsModule } from './logs/logs.module';
       synchronize: true,
       debug:false
     }),
+    JsForceModule.forRoot({
+      username: 'secondstreet@hearst.com.test',
+      password: 'R2834m4',
+      security_token: 'BC9FE1671D8A6D93C543BE3B577B0040C3AE24C6F21AA04BF79D84C8B3E5AECB',
+  
+      options: {
+      loginUrl: 'https://hearstnp--test.sandbox.my.salesforce.com/',
+      },
+      }),
     CategoriesModule,
     MerchantsModule,
     NominationsModule,
