@@ -80,9 +80,17 @@ npm run migration:run
 
 ```
 
-## Support
+## Code Logic
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+The main logic to fetch records from second street is written in nominations.service.ts file.
+
+Fetch Function:
+
+- The getWinnerReports function call the second street API to fetch the csv url.
+- The parseWinnerReport function uses that url to fetch and parse the csv data.
+- It creates an input stream, and provide a callback to the parseStream.on('data'), as the data is recived it's being pushed into a temo array, once the array count is 15000 records, the records are pushed into the votes and nominations table.
+- If records are less than 15000 we push the records to database inside the stream finish handler.
+- Nominations getAll APi applies a query which counts the records from the votes as the vote table. 
 
 
 ## License
