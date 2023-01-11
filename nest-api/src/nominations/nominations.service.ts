@@ -48,26 +48,21 @@ export class NominationsService {
       .execute();
     return;
 
-
-    // const nominationsToUpdate = await this.findAllByEntityName(nominations);
-    // console.log(nominationsToUpdate[0]);
-    // await this.nominationRepository.save(nominationsToUpdate);
-
   }
 
   async fetch(fetchNominationDto: FetchNominationDto) {
- 
+
     const id = uuidv4()
     await this.logService.log(id, "Logs Creation Started!")
     this.addOperations(fetchNominationDto, id);
-  
+
     return { success: true, id };
 
   }
 
-  private async addOperations(fetchNominationDto: FetchNominationDto, id:string){
+  private async addOperations(fetchNominationDto: FetchNominationDto, id: string) {
     const { organizationId, organizationPromotionId, promotionId, city, state, contestTitle }
-    = fetchNominationDto;
+      = fetchNominationDto;
     // await this.remove();
     await this.voteService.remove();
     await this.nominationRequestService.create({
@@ -83,8 +78,8 @@ export class NominationsService {
     const reportJson: any = await this.reportsService.getWinnersReport(organizationId, promotionId, organizationPromotionId);
     this.logService.log(id, `second result ${reportJson}`);
     await this.parseWinnerReport(reportJson.reports[0].file_url, id);
-    
-    
+
+
     await this.PrepareAndCreateLeads(id);
   }
 
@@ -92,44 +87,52 @@ export class NominationsService {
 
     var oauth2 = new jsforce.OAuth2({
       // you can change loginUrl to connect to sandbox or prerelease env.
-      loginUrl : process.env.SF_LOGIN_URL,
-      clientId : process.env.SF_CLIENT_ID,
-      clientSecret : process.env.SF_CLIENT_SECRET,
-      redirectUri : 'http://localhost:8080/',
+      loginUrl: process.env.SF_LOGIN_URL,
+      clientId: process.env.SF_CLIENT_ID,
+      clientSecret: process.env.SF_CLIENT_SECRET,
+      redirectUri: 'http://localhost:8080/',
     });
-    let q = await oauth2.authenticate(process.env.SF_USERNAME, process.env.SF_PASSWORD,(token)=>{
+    let q = await oauth2.authenticate(process.env.SF_USERNAME, process.env.SF_PASSWORD, (token) => {
     })
 
-    const nominationsForLeads: Array<Nomination> = await this.getNominations(1,10);
- for (let index = 0; index < 10; index++) {
+    const nominationsForLeads: Array<Nomination> = await this.getNominations(1, 10, true);
+    
+  /* uncomment the line below, if you want create leads for all records 
+     satisifying the vote count condition for now only first 10 are created */
+    
+    //const countForLeadsToBeCreated = nominationsForLeads.length; 
+    const countForLeadsToBeCreated =110;
+    
+    for (let index = 0; index < 10; index++) {
 
-  let nomination = nominationsForLeads[index]
-  let lead: CreateLeadDto = {
-    Company: nomination.entity_name,
-    nominationId: nomination.id,
-    LastName: '',
-    address: nomination.address,
-    website: nomination.website,
-    phoneNumber: nomination.phoneNumber,
-    category: nomination.category
-  };
-  console.log(lead)
-  await this.createLeads(lead, id, q.access_token); 
- }
+      let nomination = nominationsForLeads[index]
+      let lead: CreateLeadDto = {
+        Company: nomination.entity_name,
+        nominationId: nomination.id,
+        LastName: '',
+        address: nomination.address,
+        website: nomination.website,
+        phoneNumber: nomination.phoneNumber,
+        category: nomination.category
+      };
+      console.log(lead)
+      await this.createLeads(lead, id, q.access_token);
+    }
   }
 
-  private async getNominations(count:number, take: number) {
+  private async getNominations(count: number, take: number, restrictCount = false) {
 
     const phone = "`phone-number`";
-    const nominationsForLeads: Array<Nomination> = 
-   await this.entityManager.query(
+    const countClause = restrictCount ? `having count(*) >= 6`: ``;
+    const nominationsForLeads: Array<Nomination> =
+      await this.entityManager.query(
 
-      `SELECT
+        `SELECT
       nomination.id as id,
       nomination.entity_name as entity_name,
-       nomination.category as category,
-        nomination.address as address,
-        nomination.lead_id as leadsId,
+      nomination.category as category,
+      nomination.address as address,
+      nomination.lead_id as leadsId,
       ${phone} as phoneNumber,
       website, 
       count(*) as vote_count
@@ -137,9 +140,10 @@ export class NominationsService {
       inner join nomination 
       On nomination.entity_name = vote.entity_name 
       group by nomination.id, nomination.entity_name, nomination.category, address, ${phone}
+      ${countClause}
       order by ${phone} DESC
       ;`
-    )
+      )
     return nominationsForLeads;
   }
 
@@ -148,7 +152,7 @@ export class NominationsService {
 
     for (let index = 0; index < 10; index++) {
       const nomination = nominationsFromSS[index]
-    
+
       const searchResult = await this.googleAPIService.textSearch(nomination['Voted For Entry Name']);
       if (searchResult && searchResult.placeId) {
         const details = await this.googleAPIService.placeDetails(searchResult.placeId);
@@ -165,15 +169,15 @@ export class NominationsService {
         entity_name: x['Voted For Entry Name'],
         category: x['Category'],
         entry_id: x['Voted for Entry Id'],
-        vote_date:x[`"Vote Date (Eastern Time)"`]|| x[`Vote Date (Eastern Time)`],
+        vote_date: x[`"Vote Date (Eastern Time)"`] || x[`Vote Date (Eastern Time)`],
         email: x['Voter Email Address'],
         ip_address: x['Vote Ip Address'],
-        id:undefined
+        id: undefined
       })
 
-      
 
-    
+
+
       return {
         entity_name: x['Voted For Entry Name'],
         category: x['Category'],
@@ -186,9 +190,9 @@ export class NominationsService {
 
     });
 
- 
-    
-    return { nominations, votes};
+
+
+    return { nominations, votes };
   }
 
   async parseWinnerReport(url, id) {
@@ -212,25 +216,25 @@ export class NominationsService {
       // const data = [];
 
       parseStream.on('data', async (chunk) => {
-       console.log('Adding to nomination array')
+        console.log('Adding to nomination array')
         nominationsTemp.push(chunk)
         if (nominationsTemp.length > 15000) {
           try {
-          parseStream.pause();
-          this.logService.log(id,"Pushing chunck of 15000 records")
-          
-            const { nominations, votes} = await this.prepareNominations(nominationsTemp);
+            parseStream.pause();
+            this.logService.log(id, "Pushing chunck of 15000 records")
+
+            const { nominations, votes } = await this.prepareNominations(nominationsTemp);
             await this.voteService.create(votes)
             await this.upsertNominations(nominations);
             nominationsTemp = [];
-          
+
           }
           catch (ex) {
-            this.logService.log(id,"Failed to insert nominations into the database");
+            this.logService.log(id, "Failed to insert nominations into the database");
             throw ex;
           }
-          finally{
-            this.logService.log(id,"Pushing chunck of less than 15000 records")
+          finally {
+            this.logService.log(id, "Pushing chunck of less than 15000 records")
             parseStream.end();
             return resolve();
           }
@@ -239,13 +243,13 @@ export class NominationsService {
       });
 
       dataStream.on('finish', async () => {
-        if(nominationsTemp.length){
-          const { nominations, votes} = await this.prepareNominations(nominationsTemp);
+        if (nominationsTemp.length) {
+          const { nominations, votes } = await this.prepareNominations(nominationsTemp);
           await this.voteService.create(votes)
           await this.upsertNominations(nominations);
           nominationsTemp = [];
         }
-        this.logService.log(id,'Finished with creating nominations');
+        this.logService.log(id, 'Finished with creating nominations');
         return resolve();
       });
 
@@ -254,13 +258,13 @@ export class NominationsService {
   }
 
 
-  async createLeads(createLeadDto: CreateLeadDto, id:string, token:string) {
+  async createLeads(createLeadDto: CreateLeadDto, id: string, token: string) {
     const config = {
       headers: { Authorization: `Bearer ${token}` }
     };
 
-    this.logService.log( id, 'Creating Lead with DTO:');
-    
+    this.logService.log(id, 'Creating Lead with DTO:');
+
     const body: any = {
       "Company": createLeadDto.Company,
       "LastName": 'Excolo',
@@ -291,21 +295,21 @@ export class NominationsService {
         body
         , config).then(async (r) => {
 
-          await this.nominationRepository.save({id:createLeadDto.nominationId,leadsId: r.data.id })
+          await this.nominationRepository.save({ id: createLeadDto.nominationId, leadsId: r.data.id })
 
           await this.logService.log(id, `Lead added with id ${createLeadDto.nominationId}`)
           return r.data;
         })
     }
     catch (ex) {
-      this.logService.log( id, "excetpion: " + ex);
+      this.logService.log(id, "excetpion: " + ex);
     }
-    return 
+    return
   }
 
 
   findAll() {
-    return this.getNominations(0,15000);
+    return this.getNominations(0, 15000);
   }
 
   findAllByEntityName(nomination: Array<Nomination>) {
