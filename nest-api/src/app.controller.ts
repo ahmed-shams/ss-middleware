@@ -7,7 +7,7 @@ import * as jsforce from 'jsforce';
 export class AppController {
   constructor(private readonly appService: AppService) { }
 
-  @ApiOperation({ description: 'Hello World' })
+  @ApiOperation({ description: 'Welcome to Excolo' })
   @Get()
   getHello(@Request() req): string {
 
