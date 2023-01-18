@@ -85,7 +85,7 @@ export class NominationsService {
     await this.parseWinnerReport(reportJson.reports[0].file_url, id);
     
     // uncomment this to actually create the lead on SF, we need to make sure this only happens after ALL records have been processed from the csv
-   // await this.PrepareAndCreateLeads(id);
+   await this.PrepareAndCreateLeads(id);
   }
 
   private async PrepareAndCreateLeads(id) {
@@ -113,9 +113,14 @@ console.log("countForLeadsToBeCreated: ", countForLeadsToBeCreated);
     if(!countForLeadsToBeCreated) {
       await this.logService.log(id, "No Nominations to Create Salesforce Leads for")
     }
+
+    await this.logService.log(id, `Leads count to be created ${countForLeadsToBeCreated} `)
  for (let index = 0; index < countForLeadsToBeCreated; index++) {
 
-  let nomination = nominationsForLeads[index]
+  
+
+  let nomination = nominationsForLeads[index];
+  this.logService.log(id, nomination.vote_count.toString())
   let lead: CreateLeadDto = {
     Company: nomination.entity_name,
     nominationId: nomination.id,
@@ -125,7 +130,7 @@ console.log("countForLeadsToBeCreated: ", countForLeadsToBeCreated);
     phoneNumber: nomination.phoneNumber,
     category: nomination.category
   };
-  console.log(lead)
+  // await this.logService.log(id, JSON.stringify(lead));
   await this.createLeads(lead, id, q.access_token); 
  }
   }
@@ -150,6 +155,7 @@ console.log("countForLeadsToBeCreated: ", countForLeadsToBeCreated);
       from vote 
       inner join nomination 
       On nomination.entity_name = vote.entity_name 
+      AND nomination.category = vote.category
       ${whereLeadisNull}
       group by nomination.id, nomination.entity_name, nomination.category, address, ${phone}
       ${countClause}
@@ -165,30 +171,15 @@ console.log("countForLeadsToBeCreated: ", countForLeadsToBeCreated);
     console.log("Before processing length: ", nominationsFromSS.length);
     for (let index = 0; index < nominationsFromSS.length; index++) {
       const nomination = nominationsFromSS[index];
-// console.log("NOMINATION DATA: ",nominationsFromSS.length, nominationsFromSS[index], index);
-      if( nomination['Voted For Entry Name'] === undefined) {
-        nominationsFromSS.splice(index, 1);
-        nameNotFound++;
-        continue;
-      }
-      const existingNomination = await this.findNomination(nomination['Voted For Entry Name'], nomination['Category']);
+
+      // if( nomination['Voted For Entry Name'] === undefined) {
+      //   nominationsFromSS.splice(index, 1);
+      //   nameNotFound++;
+      //   continue;
+      // }
+     
       // console.log("exiting: ", existingNomination);
-      if(existingNomination.length > 0) {
-        nominationsFromSS.splice(index, 1);
-        // this.logService.log(logId, "Nomination exists for: " + nomination['Voted For Entry Name']);
-        continue;
-      }
-      this.logService.log(logId, "Now Processing Record: " + nomination);
-      const searchResult = await this.googleAPIService.textSearch(nomination['Voted For Entry Name']);
-      console.log("Place searchResult", searchResult);   
-      if (searchResult && searchResult.placeId) {
-        const details = await this.googleAPIService.placeDetails(searchResult.placeId);
-        nomination.phoneNumber = details.phoneNumber;
-        nomination.website = details.website;
-        nomination.address = details.address;
-console.log("Place details", details);        
-      }
-// moved this here to keep track of votes even if nomination exists
+
       votes.push({
         entity_name: nomination['Voted For Entry Name'],
         category: nomination['Category'],
@@ -197,10 +188,39 @@ console.log("Place details", details);
         email: nomination['Voter Email Address'],
         ip_address: nomination['Vote Ip Address'],
         id:undefined
-      })
+      });
+
+      // this.logService.log(logId, 'Votes Count: ' + votes.length + ': '+ nominationsFromSS.length );
+      // ;
+      
+
+      const existingNomination = await this.findNomination(nomination['Voted For Entry Name'], nomination['Category']);
+
+      if(existingNomination.length > 0) {
+        // nominationsFromSS.splice(index, 1);
+        // this.logService.log(logId, "Nomination exists for: " + nomination['Voted For Entry Name']);
+        continue;
+      }
+      this.logService.log(logId, "Now Processing Record: " + nomination['Voted For Entry Name']);
+      const searchResult = await this.googleAPIService.textSearch(nomination['Voted For Entry Name']);
+      console.log("Place searchResult", searchResult);   
+      if (searchResult && searchResult.placeId) {
+        const details = await this.googleAPIService.placeDetails(searchResult.placeId);
+        nomination.phoneNumber = details.phoneNumber;
+        nomination.website = details.website;
+        nomination.address = details.address;
+// console.log("Place details", details);        
+      }
+// moved this here to keep track of votes even if nomination exists
+
+  
 
     }
     console.log("After processing length: ", nominationsFromSS.length);
+
+
+    this.logService.log(logId, 'Name Not Found: ' + nameNotFound.toString());
+
     // not sure why we are looping through the list a second time??
     // can we not do this in the above loop?
     const nominations: Array<Nomination> = nominationsFromSS.map(x => {      
@@ -221,6 +241,8 @@ console.log("Place details", details);
   async parseWinnerReport(url, id) {
     this.logService.log(id, url);
     let nominationsTemp = [];
+    let count = 0;
+    let globalVoteCount = 0;
     return new Promise<void>(async (resolve, reject) => {
       const parseStream = parse(NODE_STREAM_INPUT, {
         header: true,
@@ -237,17 +259,21 @@ console.log("Place details", details);
 
       // const data = [];
 
-      parseStream.on('data', async (chunk) => {       
+      parseStream.on('data', async (chunk) => {   
+        count++;    
         nominationsTemp.push(chunk)
-        if (nominationsTemp.length > 1000) {
+        if (nominationsTemp.length >= 1500) {
           try {
           parseStream.pause();
-          this.logService.log(id,"Pushing chunck of 1000 records")
+          this.logService.log(id,`Pushing chunck of ${nominationsTemp.length} records`)
           
             const { nominations, votes} = await this.prepareNominations(nominationsTemp, id);
-            if(votes.length) {
+            globalVoteCount += nominations.length;
+            this.logService.log(id, 'Votes Length: ' + globalVoteCount );
+            
+            // if(votes.length) {
               await this.voteService.create(votes)
-            }
+            // }
             
             if(nominations .length){
               await this.upsertNominations(nominations);
@@ -255,17 +281,12 @@ console.log("Place details", details);
             
             nominationsTemp = [];
             parseStream.resume();
-            this.logService.log(id,"Pushing next chunck of 1000 records")
+            this.logService.log(id,"Resuming Next batch")
           
           }
           catch (ex) {
             this.logService.log(id,"Failed to insert nominations into the database" + ex);
             throw ex;
-          }
-          finally{
-            this.logService.log(id,"Pushing chunck of less than 1000 records")
-            parseStream.end();
-            return resolve();
           }
         }
 
@@ -276,9 +297,13 @@ console.log("Place details", details);
           const { nominations, votes} = await this.prepareNominations(nominationsTemp, id);
           await this.voteService.create(votes)
           await this.upsertNominations(nominations);
+          globalVoteCount += votes.length;
+          this.logService.log(id, 'Votes Length: ' + globalVoteCount );
           nominationsTemp = [];
         }
         this.logService.log(id,'Finished with creating nominations');
+        this.logService.log(id,'Total Records Found: ' + count);
+        
         return resolve();
       });
 
